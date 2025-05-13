@@ -1,46 +1,28 @@
-import tensorflow as tf
-import numpy as np
 import requests
 from PIL import Image
 from io import BytesIO
-import cv2
-import random
+import numpy as np
+import tensorflow as tf
 
-class ImageDataGenerator(tf.keras.utils.Sequence):
-    def __init__(self, image_data, batch_size, target_size=(128, 128)):
-        self.image_data = image_data
-        self.batch_size = batch_size
-        self.target_size = target_size
+def load_image_from_url(url, label, img_size, num_classes):
+    try:
+        response = requests.get(url, timeout=10)
+        img = Image.open(BytesIO(response.content)).convert('RGB')
+        img = img.resize(img_size)
+        img = np.array(img) / 255.0
+        return img, tf.one_hot(label, num_classes)
+    except:
+        return None, None
 
-    def __len__(self):
-        return int(np.floor(len(self.image_data) / self.batch_size))
-
-    def __getitem__(self, index):
-        batch_data = self.image_data[index * self.batch_size:(index + 1) * self.batch_size]
-        images, labels = [], []
-
-        for item in batch_data:
-            try:
-                response = requests.get(item['url'])
-                if response.status_code != 200:
-                    continue
-                image = Image.open(BytesIO(response.content)).convert("RGB")
-                image = np.array(image)
-
-                image = self.preprocess(image)
-                images.append(image)
-                labels.append(item['label'])
-            except Exception:
-                continue
-
-        return np.array(images), tf.keras.utils.to_categorical(labels, num_classes=5)
-
-    def preprocess(self, image):
-        image = cv2.resize(image, self.target_size)
-        if random.random() > 0.5:
-            image = np.fliplr(image)
-        angle = random.randint(-30, 30)
-        h, w = image.shape[:2]
-        M = cv2.getRotationMatrix2D((w // 2, h // 2), angle, 1)
-        image = cv2.warpAffine(image, M, (w, h))
-        return image / 255.0
+def data_generator(data_list, batch_size, img_size, num_classes):
+    while True:
+        batch_images = []
+        batch_labels = []
+        for url, label in data_list:
+            img, lbl = load_image_from_url(url, label, img_size, num_classes)
+            if img is not None:
+                batch_images.append(img)
+                batch_labels.append(lbl)
+            if len(batch_images) == batch_size:
+                yield np.array(batch_images), np.array(batch_labels)
+                batch_images, batch_labels = [], []
