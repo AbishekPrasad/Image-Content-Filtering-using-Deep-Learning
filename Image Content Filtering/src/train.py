@@ -8,12 +8,13 @@ BATCH_SIZE = 32
 EPOCHS = 5
 
 class_files = {
-    'drawing': 'drawing.txt',
-    'porn': 'porn.txt',
-    'sexy': 'sexy.txt',
-    'neutral': 'neutral.txt',
-    'hentai': 'hentai.txt'
+    'drawing': '../data/urls_drawings.txt',
+    'porn': '../data/urls_porn.txt',
+    'sexy': '../data/urls_sexy.txt',
+    'neutral': '../data/urls_neutral.txt',
+    'hentai': '../data/urls_hentai.txt'
 }
+
 
 data, class_to_label = load_data_from_files(class_files)
 num_classes = len(class_to_label)
