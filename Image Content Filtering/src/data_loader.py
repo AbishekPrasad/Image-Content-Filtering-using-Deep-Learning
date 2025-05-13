@@ -1,22 +1,12 @@
-def load_image_data_from_multiple_files(file_paths):
-    image_data = []
-    for file_path in file_paths:
-        print(f"Opening file: {file_path}")
-        try:
-            with open(file_path, "r") as f:
-                for line in f:
-                    parts = line.strip().split()
-                    if len(parts) != 2:
-                        print(f"Skipping malformed line: {line}")
-                        continue
+import random
 
-                    url, label = parts
-                    try:
-                        label = int(label)
-                        image_data.append({"url": url, "label": label})
-                    except ValueError:
-                        print(f"Invalid label: {label}")
-        except FileNotFoundError:
-            print(f"File not found: {file_path}")
-    print(f"Total images loaded: {len(image_data)}")
-    return image_data
+def load_data_from_files(class_files):
+    class_to_label = {cls: i for i, cls in enumerate(class_files.keys())}
+    data = []
+    for cls, filename in class_files.items():
+        with open(filename, 'r') as f:
+            urls = f.read().splitlines()
+            for url in urls:
+                data.append((url, class_to_label[cls]))
+    random.shuffle(data)
+    return data, class_to_label
