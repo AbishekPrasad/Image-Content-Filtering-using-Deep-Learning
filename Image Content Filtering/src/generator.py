@@ -12,7 +12,7 @@ def load_image_from_url(url, label, img_size, num_classes):
         if img is None:
             return None, None
         img = cv2.resize(img, img_size)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert BGR to RGB
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) 
         img = img.astype('float32') / 255.0
         return img, tf.one_hot(label, num_classes)
     except:
