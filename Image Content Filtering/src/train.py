@@ -37,5 +37,7 @@ model.fit(
     epochs=EPOCHS
 )
 
+model.save('url_image_classifier.h5')
+
 steps_per_epoch = math.floor(len(train_data) / BATCH_SIZE)
 validation_steps = math.floor(len(val_data) / BATCH_SIZE)
