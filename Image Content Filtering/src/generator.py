@@ -1,15 +1,19 @@
 import requests
-from PIL import Image
-from io import BytesIO
 import numpy as np
 import tensorflow as tf
+import cv2
+from io import BytesIO
 
 def load_image_from_url(url, label, img_size, num_classes):
     try:
         response = requests.get(url, timeout=10)
-        img = Image.open(BytesIO(response.content)).convert('RGB')
-        img = img.resize(img_size)
-        img = np.array(img) / 255.0
+        image_data = np.asarray(bytearray(response.content), dtype=np.uint8)
+        img = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
+        if img is None:
+            return None, None
+        img = cv2.resize(img, img_size)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert BGR to RGB
+        img = img.astype('float32') / 255.0
         return img, tf.one_hot(label, num_classes)
     except:
         return None, None
