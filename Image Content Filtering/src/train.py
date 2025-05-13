@@ -1,22 +1,40 @@
-from data_loader import load_image_data_from_multiple_files
-from generator import ImageDataGenerator
-from model import create_model
+from data_loader import load_data_from_files
+from generator import data_generator
+from model import build_custom_cnn
+import math
 
-file_paths = [
-    '../data/urls_drawings.txt',
-    '../data/urls_hentai.txt',
-    '../data/urls_neutral.txt',
-    '../data/urls_porn.txt',
-    '../data/urls_sexy.txt'
-]
+IMG_SIZE = (224, 224)
+BATCH_SIZE = 32
+EPOCHS = 5
 
-# Load image data
-image_data = load_image_data_from_multiple_files(file_paths)
+class_files = {
+    'drawing': 'drawing.txt',
+    'porn': 'porn.txt',
+    'sexy': 'sexy.txt',
+    'neutral': 'neutral.txt',
+    'hentai': 'hentai.txt'
+}
 
-# Create data generator
-batch_size = 32
-train_generator = ImageDataGenerator(image_data, batch_size=batch_size)
+data, class_to_label = load_data_from_files(class_files)
+num_classes = len(class_to_label)
 
-# Create and train the model
-model = create_model()
-model.fit(train_generator, epochs=10)
+split_idx = int(0.8 * len(data))
+train_data = data[:split_idx]
+val_data = data[split_idx:]
+
+train_gen = data_generator(train_data, BATCH_SIZE, IMG_SIZE, num_classes)
+val_gen = data_generator(val_data, BATCH_SIZE, IMG_SIZE, num_classes)
+
+model = build_custom_cnn(input_shape=(224, 224, 3), num_classes=num_classes)
+model.summary()
+
+model.fit(
+    train_gen,
+    validation_data=val_gen,
+    steps_per_epoch=steps_per_epoch,
+    validation_steps=validation_steps,
+    epochs=EPOCHS
+)
+
+steps_per_epoch = math.floor(len(train_data) / BATCH_SIZE)
+validation_steps = math.floor(len(val_data) / BATCH_SIZE)
